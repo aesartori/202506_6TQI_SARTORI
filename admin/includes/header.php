@@ -10,9 +10,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .table th { background-color: #495057; color: white; }
+        .table th { background-color: #212529; color: white; }
         .btn-action { margin: 2px; }
         .status-badge { font-size: 0.8em; }
+        body { background-color: #f8f9fa; }
+        .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); }
+        .card-header { font-weight: 600; }
+        .navbar-brand { font-weight: 600; }
     </style>
 </head>
 <body>
@@ -42,8 +46,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= $currentPage === 'taches.php' ? 'active' : '' ?>" href="taches.php">
-                            <i class="fas fa-tasks"></i> Tâches
+                        <a class="nav-link <?= $currentPage === 'lieux.php' ? 'active' : '' ?>" href="lieux.php">
+                            <i class="fas fa-map-marker-alt"></i> Lieux
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $currentPage === 'tickets.php' ? 'active' : '' ?>" href="tickets.php">
+                            <i class="fas fa-ticket-alt"></i> Tickets
                         </a>
                     </li>
                 </ul>

@@ -15,16 +15,24 @@ if (!$artisteData) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = [
-        'nom' => $_POST['nom'],
-        'prenom' => $_POST['prenom'],
-        'specialite' => $_POST['specialite'],
-        'email' => $_POST['email'],
-        'telephone' => $_POST['telephone'],
-        'bio' => $_POST['bio']
-    ];
+    $photo = $artisteData['photo']; // Garder l'ancienne photo par défaut
     
-    if ($artiste->modifier($id, $data)) {
+    // Gestion de l'upload de photo
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        
+        $fileName = time() . '_' . $_FILES['photo']['name'];
+        $uploadPath = $uploadDir . $fileName;
+        
+        if (move_uploaded_file($_FILES['photo']['tmp_name'], $uploadPath)) {
+            $photo = $fileName;
+        }
+    }
+    
+    if ($artiste->modifier($id, $_POST['nom'], $_POST['url'], $photo)) {
         header("Location: artistes.php?success=modification");
         exit();
     } else {
@@ -35,74 +43,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include 'includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-user-edit"></i> Modifier l'artiste</h1>
-    <a href="artistes.php" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Retour
-    </a>
-</div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-edit"></i> Modifier un artiste</h2>
+        <a href="artistes.php" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
 
-<?php if (isset($error)): ?>
-<div class="alert alert-danger">
-    <?= $error ?>
-</div>
-<?php endif; ?>
+    <?php if (isset($error)): ?>
+    <div class="alert alert-danger">
+        <?= $error ?>
+    </div>
+    <?php endif; ?>
 
-<div class="card">
-    <div class="card-body">
-        <form method="POST">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Nom *</label>
-                        <input type="text" class="form-control" name="nom" 
-                               value="<?= htmlspecialchars($artisteData['nom']) ?>" required>
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Informations de l'artiste</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Nom de l'artiste *</label>
+                    <input type="text" name="nom" class="form-control" 
+                           value="<?= htmlspecialchars($artisteData['nom']) ?>" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">URL (site web, page, profil)</label>
+                    <input type="url" name="url" class="form-control" 
+                           value="<?= htmlspecialchars($artisteData['url']) ?>">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Changer la photo (optionnel)</label>
+                    <input type="file" name="photo" class="form-control" accept="image/*">
+                    <small class="text-muted">Laissez vide pour conserver la photo actuelle.</small>
+                </div>
+
+                <?php if ($artisteData['photo']): ?>
+                <div class="mb-3">
+                    <label class="form-label">Photo actuelle :</label>
+                    <div>
+                        <img src="../uploads/<?= htmlspecialchars($artisteData['photo']) ?>" 
+                             alt="Photo actuelle" class="img-thumbnail" style="max-width: 200px;">
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Prénom *</label>
-                        <input type="text" class="form-control" name="prenom" 
-                               value="<?= htmlspecialchars($artisteData['prenom']) ?>" required>
-                    </div>
+                <?php endif; ?>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="artistes.php" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Modifier l'artiste
+                    </button>
                 </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Spécialité *</label>
-                <input type="text" class="form-control" name="specialite" 
-                       value="<?= htmlspecialchars($artisteData['specialite']) ?>" required>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" 
-                               value="<?= htmlspecialchars($artisteData['email']) ?>">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" name="telephone" 
-                               value="<?= htmlspecialchars($artisteData['telephone']) ?>">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Biographie</label>
-                <textarea class="form-control" name="bio" rows="4"><?= htmlspecialchars($artisteData['bio']) ?></textarea>
-            </div>
-            
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="artistes.php" class="btn btn-secondary">Annuler</a>
-                <button type="submit" class="btn btn-warning">
-                    <i class="fas fa-save"></i> Modifier l'artiste
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 

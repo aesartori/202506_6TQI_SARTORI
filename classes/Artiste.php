@@ -8,59 +8,36 @@ class Artiste {
     }
 
     public function lire() {
-        $query = "SELECT * FROM " . $this->table . " ORDER BY nom, prenom ASC";
+        $query = "SELECT * FROM " . $this->table . " ORDER BY nom ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function lireUn($id) {
-        $query = "SELECT * FROM " . $this->table . " WHERE id = :id";
+        $query = "SELECT * FROM " . $this->table . " WHERE id_artiste = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function creer($data) {
-        $query = "INSERT INTO " . $this->table . " 
-                  (nom, prenom, specialite, email, telephone, bio) 
-                  VALUES (:nom, :prenom, :specialite, :email, :telephone, :bio)";
+    public function creer($nom, $url = null, $photo = null) {
+        $query = "INSERT INTO " . $this->table . " (nom, url, photo) VALUES (?, ?, ?)";
         $stmt = $this->conn->prepare($query);
-        
-        $stmt->bindParam(':nom', $data['nom']);
-        $stmt->bindParam(':prenom', $data['prenom']);
-        $stmt->bindParam(':specialite', $data['specialite']);
-        $stmt->bindParam(':email', $data['email']);
-        $stmt->bindParam(':telephone', $data['telephone']);
-        $stmt->bindParam(':bio', $data['bio']);
-        
-        return $stmt->execute();
+        return $stmt->execute([$nom, $url, $photo]);
     }
 
-    public function modifier($id, $data) {
-        $query = "UPDATE " . $this->table . " 
-                  SET nom=:nom, prenom=:prenom, specialite=:specialite, 
-                      email=:email, telephone=:telephone, bio=:bio 
-                  WHERE id=:id";
+    public function modifier($id, $nom, $url = null, $photo = null) {
+        $query = "UPDATE " . $this->table . " SET nom = ?, url = ?, photo = ? WHERE id_artiste = ?";
         $stmt = $this->conn->prepare($query);
-        
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':nom', $data['nom']);
-        $stmt->bindParam(':prenom', $data['prenom']);
-        $stmt->bindParam(':specialite', $data['specialite']);
-        $stmt->bindParam(':email', $data['email']);
-        $stmt->bindParam(':telephone', $data['telephone']);
-        $stmt->bindParam(':bio', $data['bio']);
-        
-        return $stmt->execute();
+        return $stmt->execute([$nom, $url, $photo, $id]);
     }
 
     public function supprimer($id) {
-        $query = "DELETE FROM " . $this->table . " WHERE id = :id";
+        $query = "DELETE FROM " . $this->table . " WHERE id_artiste = ?";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $id);
-        return $stmt->execute();
+        return $stmt->execute([$id]);
     }
 }
 ?>

@@ -6,92 +6,83 @@ $database = new Database();
 $db = $database->getConnection();
 $artiste = new Artiste($db);
 
+$message = '';
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = [
-        'nom' => $_POST['nom'],
-        'prenom' => $_POST['prenom'],
-        'specialite' => $_POST['specialite'],
-        'email' => $_POST['email'],
-        'telephone' => $_POST['telephone'],
-        'bio' => $_POST['bio']
-    ];
+    $photo = null;
     
-    if ($artiste->creer($data)) {
+    // Gestion de l'upload de photo
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        
+        $fileName = time() . '_' . $_FILES['photo']['name'];
+        $uploadPath = $uploadDir . $fileName;
+        
+        if (move_uploaded_file($_FILES['photo']['tmp_name'], $uploadPath)) {
+            $photo = $fileName;
+        }
+    }
+    
+    if ($artiste->creer($_POST['nom'], $_POST['url'], $photo)) {
         header("Location: artistes.php?success=creation");
         exit();
     } else {
-        $error = "Erreur lors de la création";
+        $error = "Erreur lors de l'ajout de l'artiste";
     }
 }
 
 include 'includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-user-plus"></i> Nouvel artiste</h1>
-    <a href="artistes.php" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Retour
-    </a>
-</div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-plus"></i> Ajouter un artiste</h2>
+        <a href="artistes.php" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
 
-<?php if (isset($error)): ?>
-<div class="alert alert-danger">
-    <?= $error ?>
-</div>
-<?php endif; ?>
+    <?php if ($error): ?>
+    <div class="alert alert-danger">
+        <?= $error ?>
+    </div>
+    <?php endif; ?>
 
-<div class="card">
-    <div class="card-body">
-        <form method="POST">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Nom *</label>
-                        <input type="text" class="form-control" name="nom" required>
-                    </div>
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Informations du nouvel artiste</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Nom de l'artiste *</label>
+                    <input type="text" name="nom" class="form-control" required>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Prénom *</label>
-                        <input type="text" class="form-control" name="prenom" required>
-                    </div>
+
+                <div class="mb-3">
+                    <label class="form-label">URL (site web, page, profil)</label>
+                    <input type="url" name="url" class="form-control">
                 </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Spécialité *</label>
-                <input type="text" class="form-control" name="specialite" required 
-                       placeholder="Ex: Guitare, Piano, Chant...">
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email">
-                    </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Photo (optionnel)</label>
+                    <input type="file" name="photo" class="form-control" accept="image/*">
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" name="telephone">
-                    </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="artistes.php" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Ajouter l'artiste
+                    </button>
                 </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Biographie</label>
-                <textarea class="form-control" name="bio" rows="4" 
-                          placeholder="Décrivez le parcours et les réalisations de l'artiste..."></textarea>
-            </div>
-            
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="artistes.php" class="btn btn-secondary">Annuler</a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Créer l'artiste
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 

@@ -38,49 +38,62 @@ include 'includes/header.php';
 <?php endif; ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-users"></i> Gestion des artistes</h1>
-    <a href="artiste_ajouter.php" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Nouvel artiste
+    <h1><i class="fas fa-users"></i> Liste des artistes</h1>
+    <a href="artiste_ajouter.php" class="btn btn-success">
+        <i class="fas fa-plus"></i> Ajouter un artiste
     </a>
 </div>
 
 <div class="card">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Liste des artistes</h5>
+    </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-striped mb-0">
-                <thead>
+            <table class="table table-striped mb-0 align-middle">
+                <thead class="table-dark">
                     <tr>
                         <th>ID</th>
-                        <th>Nom complet</th>
-                        <th>Spécialité</th>
-                        <th>Email</th>
-                        <th>Téléphone</th>
-                        <th>Actions</th>
+                        <th>Nom</th>
+                        <th>URL</th>
+                        <th>Photo</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php if (empty($artistes)): ?>
+                    <tr>
+                        <td colspan="5" class="text-center">Aucun artiste enregistré</td>
+                    </tr>
+                    <?php else: ?>
                     <?php foreach ($artistes as $art): ?>
                     <tr>
-                        <td><?= $art['id'] ?></td>
-                        <td><?= htmlspecialchars($art['prenom'] . ' ' . $art['nom']) ?></td>
-                        <td><?= htmlspecialchars($art['specialite']) ?></td>
-                        <td><?= htmlspecialchars($art['email']) ?></td>
-                        <td><?= htmlspecialchars($art['telephone']) ?></td>
+                        <td><?= $art['id_artiste'] ?></td>
+                        <td><?= htmlspecialchars($art['nom']) ?></td>
                         <td>
-                            <div class="btn-group" role="group">
-                                <a href="artiste_modifier.php?id=<?= $art['id'] ?>" 
-                                   class="btn btn-sm btn-warning" title="Modifier">
-                                    <i class="fas fa-edit"></i>
+                            <?php if (!empty($art['url'])): ?>
+                                <a href="<?= htmlspecialchars($art['url']) ?>" target="_blank" class="text-primary">
+                                    <?= htmlspecialchars($art['url']) ?>
                                 </a>
-                                <a href="?supprimer=<?= $art['id'] ?>" 
-                                   class="btn btn-sm btn-danger" title="Supprimer"
-                                   onclick="return confirmerSuppression(this, 'artiste')">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </div>
+                            <?php else: ?>
+                                <span class="text-muted">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?= htmlspecialchars($art['photo'] ?? '-') ?></td>
+                        <td class="text-end">
+                            <a href="artiste_modifier.php?id=<?= $art['id_artiste'] ?>" 
+                               class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="?supprimer=<?= $art['id_artiste'] ?>" 
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirmerSuppression(this, 'artiste')">
+                                <i class="fas fa-trash"></i>
+                            </a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

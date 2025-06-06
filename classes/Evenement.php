@@ -8,14 +8,22 @@ class Evenement {
     }
 
     public function lire() {
-        $query = "SELECT * FROM " . $this->table . " ORDER BY date_debut ASC";
+        $query = "SELECT e.*, v.nom as venue_nom, a.nom as artiste_nom 
+                  FROM " . $this->table . " e 
+                  LEFT JOIN venue v ON e.id_venue = v.id_venue 
+                  LEFT JOIN artiste a ON e.id_artiste = a.id_artiste 
+                  ORDER BY e.date_heure ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function lireUn($id) {
-        $query = "SELECT * FROM " . $this->table . " WHERE id = :id";
+        $query = "SELECT e.*, v.nom as venue_nom, a.nom as artiste_nom 
+                  FROM " . $this->table . " e 
+                  LEFT JOIN venue v ON e.id_venue = v.id_venue 
+                  LEFT JOIN artiste a ON e.id_artiste = a.id_artiste 
+                  WHERE e.id_evenement = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
@@ -24,55 +32,71 @@ class Evenement {
 
     public function creer($data) {
         $query = "INSERT INTO " . $this->table . " 
-                  (nom, description, date_debut, date_fin, lieu, capacite, prix, statut) 
-                  VALUES (:nom, :description, :date_debut, :date_fin, :lieu, :capacite, :prix, :statut)";
+                  (titre, description, date_heure, prix, id_venue, id_artiste, image) 
+                  VALUES (:titre, :description, :date_heure, :prix, :id_venue, :id_artiste, :image)";
         $stmt = $this->conn->prepare($query);
         
-        $stmt->bindParam(':nom', $data['nom']);
+        $stmt->bindParam(':titre', $data['titre']);
         $stmt->bindParam(':description', $data['description']);
-        $stmt->bindParam(':date_debut', $data['date_debut']);
-        $stmt->bindParam(':date_fin', $data['date_fin']);
-        $stmt->bindParam(':lieu', $data['lieu']);
-        $stmt->bindParam(':capacite', $data['capacite']);
+        $stmt->bindParam(':date_heure', $data['date_heure']);
         $stmt->bindParam(':prix', $data['prix']);
-        $stmt->bindParam(':statut', $data['statut']);
+        $stmt->bindParam(':id_venue', $data['id_venue']);
+        $stmt->bindParam(':id_artiste', $data['id_artiste']);
+        $stmt->bindParam(':image', $data['image']);
         
         return $stmt->execute();
     }
 
     public function modifier($id, $data) {
         $query = "UPDATE " . $this->table . " 
-                  SET nom=:nom, description=:description, date_debut=:date_debut, 
-                      date_fin=:date_fin, lieu=:lieu, capacite=:capacite, prix=:prix, statut=:statut 
-                  WHERE id=:id";
+                  SET titre = :titre, 
+                      description = :description, 
+                      date_heure = :date_heure, 
+                      prix = :prix, 
+                      id_venue = :id_venue, 
+                      id_artiste = :id_artiste";
+        
+        // Ajout conditionnel de l'image si fournie
+        if(isset($data['image']) && !empty($data['image'])) {
+            $query .= ", image = :image";
+        }
+        
+        $query .= " WHERE id_evenement = :id";
+        
         $stmt = $this->conn->prepare($query);
         
         $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':nom', $data['nom']);
+        $stmt->bindParam(':titre', $data['titre']);
         $stmt->bindParam(':description', $data['description']);
-        $stmt->bindParam(':date_debut', $data['date_debut']);
-        $stmt->bindParam(':date_fin', $data['date_fin']);
-        $stmt->bindParam(':lieu', $data['lieu']);
-        $stmt->bindParam(':capacite', $data['capacite']);
+        $stmt->bindParam(':date_heure', $data['date_heure']);
         $stmt->bindParam(':prix', $data['prix']);
-        $stmt->bindParam(':statut', $data['statut']);
+        $stmt->bindParam(':id_venue', $data['id_venue']);
+        $stmt->bindParam(':id_artiste', $data['id_artiste']);
+        
+        if(isset($data['image']) && !empty($data['image'])) {
+            $stmt->bindParam(':image', $data['image']);
+        }
         
         return $stmt->execute();
     }
 
     public function supprimer($id) {
-        $query = "DELETE FROM " . $this->table . " WHERE id = :id";
+        $query = "DELETE FROM " . $this->table . " WHERE id_evenement = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
 
-    public function getArtistes($evenement_id) {
-        $query = "SELECT a.*, ea.role FROM artiste a 
-                  JOIN evenement_artiste ea ON a.id = ea.artiste_id 
-                  WHERE ea.evenement_id = :evenement_id";
+    public function getProchains($limit = 6) {
+        $query = "SELECT e.*, v.nom as venue_nom, a.nom as artiste_nom 
+                  FROM " . $this->table . " e 
+                  LEFT JOIN venue v ON e.id_venue = v.id_venue 
+                  LEFT JOIN artiste a ON e.id_artiste = a.id_artiste 
+                  WHERE e.date_heure > NOW()
+                  ORDER BY e.date_heure ASC 
+                  LIMIT :limit";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':evenement_id', $evenement_id);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

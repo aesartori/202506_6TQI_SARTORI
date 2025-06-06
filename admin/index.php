@@ -1,25 +1,28 @@
 <?php
 require_once '../config/database.php';
 require_once '../classes/Evenement.php';
+require_once '../classes/Venue.php';
 require_once '../classes/Artiste.php';
-require_once '../classes/Tache.php';
+require_once '../classes/Ticket.php';
 
 $database = new Database();
 $db = $database->getConnection();
 
 $evenement = new Evenement($db);
+$venue = new Venue($db);
 $artiste = new Artiste($db);
-$tache = new Tache($db);
+$ticket = new Ticket($db);
 
 $evenements = $evenement->lire();
+$venues = $venue->lire();
 $artistes = $artiste->lire();
-$taches = $tache->lire();
+$prochainsEvenements = $evenement->getProchains(5);
 
 include 'includes/header.php';
 ?>
 
 <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card bg-primary text-white mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -34,8 +37,23 @@ include 'includes/header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card bg-success text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4><?= count($venues) ?></h4>
+                        <p class="mb-0">Lieux</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-map-marker-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
@@ -49,40 +67,10 @@ include 'includes/header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4><?= count($taches) ?></h4>
-                        <p class="mb-0">Tâches</p>
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-tasks fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4><?= array_filter($taches, fn($t) => $t['statut'] === 'a_faire') ? count(array_filter($taches, fn($t) => $t['statut'] === 'a_faire')) : 0 ?></h4>
-                        <p class="mb-0">Tâches en attente</p>
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-clock fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-12">
         <div class="card">
             <div class="card-header bg-dark text-white">
                 <h5 class="mb-0"><i class="fas fa-calendar"></i> Prochains événements</h5>
@@ -92,72 +80,41 @@ include 'includes/header.php';
                     <table class="table table-striped mb-0">
                         <thead>
                             <tr>
-                                <th>Nom</th>
+                                <th>Titre</th>
                                 <th>Date</th>
                                 <th>Lieu</th>
-                                <th>Statut</th>
+                                <th>Artiste</th>
+                                <th>Prix (€)</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach(array_slice($evenements, 0, 5) as $evt): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($evt['nom']) ?></td>
-                                <td><?= date('d/m/Y H:i', strtotime($evt['date_debut'])) ?></td>
-                                <td><?= htmlspecialchars($evt['lieu']) ?></td>
-                                <td>
-                                    <span class="badge bg-<?= 
-                                        $evt['statut'] === 'planifie' ? 'primary' : 
-                                        ($evt['statut'] === 'en_cours' ? 'warning' : 
-                                        ($evt['statut'] === 'termine' ? 'success' : 'danger')) 
-                                    ?> status-badge">
-                                        <?= ucfirst(str_replace('_', ' ', $evt['statut'])) ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="evenement_modifier.php?id=<?= $evt['id'] ?>" class="btn btn-sm btn-warning btn-action">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="../front/evenement.php?id=<?= $evt['id'] ?>" 
-                                       class="btn btn-sm btn-info btn-action" target="_blank">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
+                            <?php if(empty($prochainsEvenements)): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center py-3">Aucun événement à venir</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach($prochainsEvenements as $evt): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($evt['titre']) ?></td>
+                                    <td><?= date('d/m/Y H:i', strtotime($evt['date_heure'])) ?></td>
+                                    <td><?= htmlspecialchars($evt['venue_nom'] ?? 'Non défini') ?></td>
+                                    <td><?= htmlspecialchars($evt['artiste_nom'] ?? 'Non défini') ?></td>
+                                    <td><?= number_format($evt['prix'], 2) ?></td>
+                                    <td>
+                                        <a href="evenement_modifier.php?id=<?= $evt['id_evenement'] ?>" class="btn btn-sm btn-warning btn-action">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="tickets_evenement.php?evenement_id=<?= $evt['id_evenement'] ?>" class="btn btn-sm btn-success btn-action">
+                                            <i class="fas fa-ticket-alt"></i> Tickets
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0"><i class="fas fa-tasks"></i> Tâches urgentes</h5>
-            </div>
-            <div class="card-body">
-                <?php 
-                $taches_urgentes = array_filter($taches, function($t) {
-                    return $t['priorite'] === 'haute' && $t['statut'] !== 'termine';
-                });
-                ?>
-                <?php if(empty($taches_urgentes)): ?>
-                <p class="text-muted">Aucune tâche urgente</p>
-                <?php else: ?>
-                <?php foreach(array_slice($taches_urgentes, 0, 5) as $tache): ?>
-                <div class="border-start border-danger border-4 ps-3 mb-3">
-                    <h6 class="mb-1"><?= htmlspecialchars($tache['titre']) ?></h6>
-                    <small class="text-muted">
-                        <i class="fas fa-clock"></i> <?= date('d/m/Y H:i', strtotime($tache['date_echeance'])) ?>
-                        <?php if($tache['evenement_nom']): ?>
-                        <br><i class="fas fa-calendar"></i> <?= htmlspecialchars($tache['evenement_nom']) ?>
-                        <?php endif; ?>
-                    </small>
-                </div>
-                <?php endforeach; ?>
-                <?php endif; ?>
             </div>
         </div>
     </div>
