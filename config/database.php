@@ -1,7 +1,7 @@
 <?php
 class Database {
     private $host = 'localhost';
-    private $db_name = 'event_manager_v1';
+    private $db_name = 'event_manager_v2';
     private $username = 'root';
     private $password = '';
     public $conn;

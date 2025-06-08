@@ -15,9 +15,8 @@ if (!$venueData) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $photo = $venueData['photo']; // Garder l'ancienne photo par défaut
+    $photo = $venueData['photo'];
     
-    // Gestion de l'upload de photo
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
         $uploadDir = '../uploads/';
         if (!is_dir($uploadDir)) {
@@ -43,22 +42,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include 'includes/header.php';
 ?>
 
-<div class="container-fluid">
+<main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-edit"></i> Modifier un lieu</h2>
-        <a href="lieux.php" class="btn btn-secondary">
+        <a href="lieux.php" class="btn btn-secondary btn-action">
             <i class="fas fa-arrow-left"></i> Retour
         </a>
     </div>
 
     <?php if (isset($error)): ?>
-    <div class="alert alert-danger">
+    <div class="alert alert-danger" style="background: #2a2a3e; border-color: #444; color: var(--text-primary);">
         <?= $error ?>
     </div>
     <?php endif; ?>
 
-    <div class="card">
-        <div class="card-header bg-dark text-white">
+    <div class="card shadow" style="background: var(--surface-dark); border: 1px solid #333;">
+        <div class="card-header" style="background: linear-gradient(45deg, var(--accent-color), #9D67E7); color: white; border-bottom: 1px solid #333;">
             <h5 class="mb-0">Informations du lieu</h5>
         </div>
         <div class="card-body">
@@ -66,15 +65,17 @@ include 'includes/header.php';
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Nom du lieu *</label>
+                            <label class="form-label" style="color: var(--text-primary);">Nom du lieu *</label>
                             <input type="text" name="nom" class="form-control" 
-                                   value="<?= htmlspecialchars($venueData['nom']) ?>" required>
+                                   value="<?= htmlspecialchars($venueData['nom']) ?>" required
+                                   style="background: #2a2a3e; border-color: #444; color: var(--text-primary);">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Type de lieu</label>
-                            <select name="type" class="form-select">
+                            <label class="form-label" style="color: var(--text-primary);">Type de lieu</label>
+                            <select name="type" class="form-select"
+                                    style="background: #2a2a3e; border-color: #444; color: var(--text-primary);">
                                 <option value="">Sélectionner un type</option>
                                 <option value="Salle de concert" <?= $venueData['type'] === 'Salle de concert' ? 'selected' : '' ?>>Salle de concert</option>
                                 <option value="Théâtre" <?= $venueData['type'] === 'Théâtre' ? 'selected' : '' ?>>Théâtre</option>
@@ -88,44 +89,48 @@ include 'includes/header.php';
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Adresse</label>
+                    <label class="form-label" style="color: var(--text-primary);">Adresse</label>
                     <input type="text" name="adresse" class="form-control" 
-                           value="<?= htmlspecialchars($venueData['adresse']) ?>">
+                           value="<?= htmlspecialchars($venueData['adresse']) ?>"
+                           style="background: #2a2a3e; border-color: #444; color: var(--text-primary);">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">URL du site (optionnel)</label>
+                    <label class="form-label" style="color: var(--text-primary);">URL du site (optionnel)</label>
                     <input type="url" name="url" class="form-control" 
-                           value="<?= htmlspecialchars($venueData['url']) ?>">
+                           value="<?= htmlspecialchars($venueData['url']) ?>"
+                           style="background: #2a2a3e; border-color: #444; color: var(--text-primary);">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Changer la photo (optionnel)</label>
-                    <input type="file" name="photo" class="form-control" accept="image/*">
-                    <small class="text-muted">Laissez vide pour conserver la photo actuelle.</small>
+                    <label class="form-label" style="color: var(--text-primary);">Changer la photo (optionnel)</label>
+                    <input type="file" name="photo" class="form-control" accept="image/*"
+                           style="background: #2a2a3e; border-color: #444; color: var(--text-primary);">
+                    <small style="color: var(--text-secondary);">Laissez vide pour conserver la photo actuelle.</small>
                 </div>
 
                 <?php if ($venueData['photo']): ?>
                 <div class="mb-3">
-                    <label class="form-label">Photo actuelle :</label>
+                    <label class="form-label" style="color: var(--text-primary);">Photo actuelle :</label>
                     <div>
                         <img src="../uploads/<?= htmlspecialchars($venueData['photo']) ?>" 
-                             alt="Photo actuelle" class="img-thumbnail" style="max-width: 200px;">
+                             alt="Photo actuelle" class="img-thumbnail" 
+                             style="max-width: 200px; border-color: #444;">
                     </div>
                 </div>
                 <?php endif; ?>
 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="lieux.php" class="btn btn-secondary">
+                    <a href="lieux.php" class="btn btn-secondary btn-action">
                         <i class="fas fa-times"></i> Annuler
                     </a>
-                    <button type="submit" class="btn btn-warning">
+                    <button type="submit" class="btn btn-warning btn-action">
                         <i class="fas fa-save"></i> Modifier le lieu
                     </button>
                 </div>
             </form>
         </div>
     </div>
-</div>
+</main>
 
 <?php include 'includes/footer.php'; ?>

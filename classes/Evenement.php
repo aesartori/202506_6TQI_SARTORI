@@ -100,5 +100,31 @@ class Evenement {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function lireParLieu($id_venue) {
+    $query = "SELECT * FROM evenement WHERE id_venue = :id_venue";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':id_venue', $id_venue, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function lireParEvenement($id_evenement) {
+        $query = "SELECT * FROM ticket WHERE id_evenement = :id_evenement";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id_evenement', $id_evenement, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function lireParArtiste($id_artiste) {
+        $query = "SELECT * FROM evenement WHERE id_artiste = :id_artiste";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id_artiste', $id_artiste, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
 }
 ?>
